@@ -1,0 +1,34 @@
+* { -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  font-family: -apple-system, Roboto, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--text-color, #1f1f1f);
+}
+
+#editor {
+  border: none;
+  padding: 16px;
+  min-height: 100vh;
+}
+
+.ql-editor {
+  padding: 0;
+  outline: none;
+}
+
+.ql-editor.ql-blank::before {
+  color: var(--placeholder-color, #999);
+  font-style: normal;
+  left: 0;
+}
+
+/* Dark mode driven from Kotlin via CSS variables */
+body.dark {
+  --text-color: #e3e3e3;
+  --placeholder-color: #757575;
+}

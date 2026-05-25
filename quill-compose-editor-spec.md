@@ -129,10 +129,12 @@ android-editor/                          ← repo root
 
 ## Step 1 — Bundle Quill Assets
 
-Download the Quill **core** build (not `quill.snow` — we ship our own toolbar). Place these in `editor/src/main/assets/quill/`:
+Place these in `editor/src/main/assets/quill/` (Quill 2.0.3):
 
-- `quill.core.js` — version `2.0.3`
-- `quill.core.css` — version `2.0.3`
+- `quill.js` — the **full** UMD build (~209 KB). Contains all standard formats (bold, italic, underline, strike, list, header, link, image) pre-registered. Required: `quill.core.js` is bare-bones with **no** formats registered, so using it produces `Cannot register "bold"` errors at init.
+- `quill.core.css` — minimum structural CSS, no theme. Pairs with our own `editor.css` for native-feel styling.
+
+We deliberately skip the snow and bubble theme bundles because we ship our own Compose toolbar.
 
 Pin the version in a header comment at the top of `editor.js` so future upgrades are explicit:
 
@@ -156,7 +158,7 @@ Pin the version in a header comment at the top of `editor.js` so future upgrades
 </head>
 <body>
   <div id="editor"></div>
-  <script src="quill.core.js"></script>
+  <script src="quill.js"></script>
   <script src="editor.js"></script>
 </body>
 </html>

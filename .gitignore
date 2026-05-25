@@ -3,6 +3,7 @@
 build/
 !gradle/wrapper/gradle-wrapper.jar
 gradle.properties.local
+gradle/gradle-daemon-jvm.properties
 
 # Android Studio / IntelliJ
 .idea/
