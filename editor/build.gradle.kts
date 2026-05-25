@@ -3,6 +3,8 @@ plugins {
   alias(libs.plugins.kotlin.android)
   alias(libs.plugins.kotlin.compose)
   alias(libs.plugins.kotlin.serialization)
+  alias(libs.plugins.dokka)
+  `maven-publish`
 }
 
 android {
@@ -34,6 +36,64 @@ android {
       isMinifyEnabled = false
       proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
     }
+  }
+
+  publishing {
+    singleVariant("release") {
+      withSourcesJar()
+    }
+  }
+}
+
+// Jar of Dokka HTML output, attached to the release publication as the
+// `javadoc` classifier so Maven consumers see API docs alongside sources.
+val dokkaJavadocJar by tasks.registering(Jar::class) {
+  dependsOn(tasks.named("dokkaGenerate"))
+  from(layout.buildDirectory.dir("dokka/html"))
+  archiveClassifier.set("javadoc")
+}
+
+publishing {
+  publications {
+    register<MavenPublication>("release") {
+      groupId = "dev.mangolabs"
+      artifactId = "quill-compose-editor"
+      version = "0.1.0-SNAPSHOT"
+
+      afterEvaluate {
+        from(components["release"])
+        artifact(dokkaJavadocJar)
+      }
+
+      pom {
+        name.set("Quill Compose Editor")
+        description.set(
+          "Jetpack Compose rich text editor backed by Quill.js — a clean Kotlin API over a Quill-powered WebView."
+        )
+        url.set("https://github.com/mango-labs-dev/android-editor")
+        licenses {
+          license {
+            name.set("The Apache License, Version 2.0")
+            url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
+          }
+        }
+        developers {
+          developer {
+            id.set("mangolabs")
+            name.set("Mango Labs")
+          }
+        }
+        scm {
+          url.set("https://github.com/mango-labs-dev/android-editor")
+          connection.set("scm:git:git://github.com/mango-labs-dev/android-editor.git")
+          developerConnection.set("scm:git:ssh://git@github.com/mango-labs-dev/android-editor.git")
+        }
+      }
+    }
+  }
+
+  repositories {
+    mavenLocal()
   }
 }
 
