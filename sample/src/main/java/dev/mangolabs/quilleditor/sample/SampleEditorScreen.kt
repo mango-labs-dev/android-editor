@@ -12,12 +12,15 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddPhotoAlternate
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -27,7 +30,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.FileProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.mangolabs.quilleditor.QuillEditor
+import dev.mangolabs.quilleditor.QuillState
 import dev.mangolabs.quilleditor.QuillToolbar
 import dev.mangolabs.quilleditor.rememberQuillState
 import kotlinx.coroutines.launch
@@ -37,17 +42,29 @@ import java.util.UUID
 private const val TAG = "QuillSample"
 
 /**
- * Image-picker launchers and any pending state are hoisted here so they
- * survive [ImagePickerSheet] being dismissed before the chosen activity
- * returns its result. Each launcher posts the saved image's app-image://
- * URL to [dev.mangolabs.quilleditor.QuillState.insertImage].
+ * Phase 6 — wires a [SampleViewModel] for config-change-safe persistence,
+ * autosaves [QuillState.contentDelta] back into the VM whenever it changes,
+ * applies imePadding so the editor shrinks above the soft keyboard, and
+ * exposes an [onStateReady] test seam.
  */
 @Composable
-fun SampleEditorScreen(modifier: Modifier = Modifier) {
-  val state = rememberQuillState()
+fun SampleEditorScreen(
+  modifier: Modifier = Modifier,
+  vm: SampleViewModel = viewModel(),
+  onStateReady: ((QuillState) -> Unit)? = null
+) {
   val ctx = LocalContext.current
   val scope = rememberCoroutineScope()
   val store = remember { ImageStore(ctx) }
+
+  val savedDelta by vm.savedDelta.collectAsState()
+  val state = rememberQuillState(initial = savedDelta)
+
+  LaunchedEffect(state) { onStateReady?.invoke(state) }
+
+  LaunchedEffect(state.contentDelta) {
+    state.contentDelta?.let { vm.setSavedDelta(it) }
+  }
 
   var showPicker by remember { mutableStateOf(false) }
   var pendingCameraUri by remember { mutableStateOf<Uri?>(null) }
@@ -78,7 +95,11 @@ fun SampleEditorScreen(modifier: Modifier = Modifier) {
     }
   }
 
-  Column(modifier = modifier.fillMaxSize()) {
+  Column(
+    modifier = modifier
+      .fillMaxSize()
+      .imePadding()
+  ) {
     QuillEditor(
       state = state,
       modifier = Modifier
