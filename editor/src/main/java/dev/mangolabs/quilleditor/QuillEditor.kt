@@ -76,6 +76,7 @@ fun QuillEditor(
         bridgeHolder[0] = bridge
         addJavascriptInterface(bridge, BRIDGE_NAME)
 
+        webViewClient = QuillWebViewClient(ctx.filesDir)
         loadUrl(EDITOR_URL)
         state.webViewRef = this
       }

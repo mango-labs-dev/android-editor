@@ -9,6 +9,17 @@ function bridge() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  // Quill 2's default Image blot sanitizes any unknown URL scheme to '//:0',
+  // which strips our synthetic app-image:// embeds. Subclass to whitelist it.
+  const Image = Quill.import('formats/image');
+  class AppImage extends Image {
+    static sanitize(url) {
+      if (typeof url === 'string' && url.startsWith('app-image://')) return url;
+      return super.sanitize(url);
+    }
+  }
+  Quill.register('formats/image', AppImage, true);
+
   quill = new Quill('#editor', {
     modules: {
       toolbar: false,

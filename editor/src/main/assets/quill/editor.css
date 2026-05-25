@@ -27,6 +27,18 @@ html, body {
   left: 0;
 }
 
+/* Constrain inline images to a thumbnail box rather than letting them
+   render at full natural resolution (which dominates the editor area). */
+.ql-editor img {
+  max-width: 240px;
+  max-height: 240px;
+  width: auto;
+  height: auto;
+  display: block;
+  margin: 8px 0;
+  border-radius: 4px;
+}
+
 /* Dark mode driven from Kotlin via CSS variables */
 body.dark {
   --text-color: #e3e3e3;
