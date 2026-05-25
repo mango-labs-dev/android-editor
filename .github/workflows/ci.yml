@@ -46,8 +46,6 @@ jobs:
   instrumented:
     name: Instrumented Tests
     runs-on: ubuntu-latest
-    # Wired in Phase 3 once the first instrumented test exists; left disabled for now.
-    if: false
 
     steps:
       - name: Checkout
@@ -58,6 +56,9 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
 
       - name: Enable KVM
         run: |
@@ -72,4 +73,13 @@ jobs:
           api-level: 34
           target: google_apis
           arch: x86_64
-          script: ./gradlew connectedDebugAndroidTest --stacktrace
+          script: ./gradlew :editor:connectedDebugAndroidTest --stacktrace
+
+      - name: Upload instrumented test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: instrumented-test-reports
+          path: |
+            **/build/reports/androidTests/
+            **/build/outputs/androidTest-results/
