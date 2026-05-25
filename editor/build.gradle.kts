@@ -53,12 +53,16 @@ val dokkaJavadocJar by tasks.registering(Jar::class) {
   archiveClassifier.set("javadoc")
 }
 
+// Publication version: defaults to a snapshot for local iteration; the release
+// workflow overrides via -PpublishVersion=<tag without the leading v>.
+val publishVersion: String = (findProperty("publishVersion") as? String) ?: "0.1.0-SNAPSHOT"
+
 publishing {
   publications {
     register<MavenPublication>("release") {
       groupId = "dev.mangolabs"
       artifactId = "quill-compose-editor"
-      version = "0.1.0-SNAPSHOT"
+      version = publishVersion
 
       afterEvaluate {
         from(components["release"])
@@ -94,6 +98,20 @@ publishing {
 
   repositories {
     mavenLocal()
+
+    // GitHub Packages — credentials come from CI env vars (GITHUB_ACTOR and
+    // GITHUB_TOKEN are auto-provided by GitHub Actions) or from
+    // ~/.gradle/gradle.properties for local publishing:
+    //   gpr.user=<github-username>
+    //   gpr.token=<PAT with write:packages>
+    maven {
+      name = "GithubPackages"
+      url = uri("https://maven.pkg.github.com/mango-labs-dev/android-editor")
+      credentials {
+        username = System.getenv("GITHUB_ACTOR") ?: (findProperty("gpr.user") as? String)
+        password = System.getenv("GITHUB_TOKEN") ?: (findProperty("gpr.token") as? String)
+      }
+    }
   }
 }
 
