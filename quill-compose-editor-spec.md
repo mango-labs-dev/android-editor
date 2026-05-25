@@ -472,43 +472,42 @@ import kotlinx.serialization.json.Json
 import java.util.concurrent.atomic.AtomicBoolean
 
 internal class QuillBridge(
-  private val state: QuillState,
-  private val onMainThread: (() -> Unit) -> Unit,
-  private val onReadyCallback: () -> Unit
+  private val onContent: (Delta) -> Unit,
+  private val onFormat: (ActiveFormat) -> Unit,
+  private val onReadyCallback: () -> Unit,
+  private val onMainThread: (() -> Unit) -> Unit
 ) {
   private val disposed = AtomicBoolean(false)
+  private val json = Json { ignoreUnknownKeys = true }
 
   fun dispose() { disposed.set(true) }
 
   @JavascriptInterface
   fun onContentChanged(deltaJson: String) {
     if (disposed.get()) return
-    val delta = Json.decodeFromString<Delta>(deltaJson)
-    onMainThread { if (!disposed.get()) state.contentDelta = delta }
+    val delta = json.decodeFromString<Delta>(deltaJson)
+    onMainThread { if (!disposed.get()) onContent(delta) }
   }
 
   @JavascriptInterface
   fun onFormatChanged(formatJson: String) {
     if (disposed.get()) return
     val format = ActiveFormat.fromJson(formatJson)
-    onMainThread { if (!disposed.get()) state.activeFormat = format }
+    onMainThread { if (!disposed.get()) onFormat(format) }
   }
 
   @JavascriptInterface
   fun onReady() {
     if (disposed.get()) return
-    onMainThread {
-      if (disposed.get()) return@onMainThread
-      state.isReady = true
-      onReadyCallback()
-    }
+    onMainThread { if (!disposed.get()) onReadyCallback() }
   }
 }
 ```
 
 **Important:**
-- `@JavascriptInterface` methods run on the WebView's JS thread, **not** the main thread. All state mutations must be marshaled via `onMainThread`.
-- The `disposed` flag guards against the race where the WebView is torn down while a JS callback is mid-flight; without it we could mutate state on a disposed editor.
+- `@JavascriptInterface` methods run on the WebView's JS thread, **not** the main thread. All callbacks must be marshaled via `onMainThread`.
+- The bridge takes plain callbacks rather than a direct `QuillState` reference. This keeps it independent of Compose runtime and JVM-testable. `QuillEditor.kt` (Step 8) wires the callbacks to `QuillState` mutations.
+- The `disposed` flag guards against the race where the WebView is torn down while a JS callback is mid-flight; without it we could mutate state on a disposed editor. The flag is checked twice — once before marshaling (cheap reject) and once inside the marshaled block (guards the race between marshal and execution).
 
 ---
 
@@ -571,9 +570,10 @@ fun QuillEditor(
         }
 
         val bridge = QuillBridge(
-          state = state,
-          onMainThread = { block -> mainHandler.post(block) },
+          onContent = { delta -> state.contentDelta = delta },
+          onFormat = { format -> state.activeFormat = format },
           onReadyCallback = {
+            state.isReady = true
             evaluateJavascript("window.setDarkMode($isDarkTheme)", null)
             initialDelta?.let {
               val json = Json.encodeToString(it)
@@ -581,7 +581,8 @@ fun QuillEditor(
                 "window.setContents(${JSONObject.quote(json)})", null
               )
             }
-          }
+          },
+          onMainThread = { block -> mainHandler.post(block) }
         )
         bridgeHolder[0] = bridge
         addJavascriptInterface(bridge, "KotlinBridge")
