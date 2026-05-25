@@ -61,12 +61,23 @@ window.applyFormat = (formatName, value) => {
   } else {
     quill.formatText(range.index, range.length, formatName, value);
   }
+  // Quill 2 does not fire selection-change for format changes on a fixed
+  // range, so push the updated format snapshot to Kotlin explicitly.
+  const after = quill.getSelection();
+  if (after) {
+    const b = bridge();
+    if (b) b.onFormatChanged(JSON.stringify(quill.getFormat(after)));
+  }
 };
 
 window.insertImage = (src) => {
   const range = quill.getSelection(true) || { index: quill.getLength() };
   quill.insertEmbed(range.index, 'image', src, 'user');
   quill.setSelection(range.index + 1);
+};
+
+window.setSelection = (index, length) => {
+  quill.setSelection(index, length, 'user');
 };
 
 window.undo = () => quill.history.undo();

@@ -65,6 +65,15 @@ class QuillState {
     contentDelta = delta
   }
 
+  /**
+   * Moves the cursor to [index]. A non-zero [length] creates a selection range
+   * starting at [index]. Triggers Quill's selection-change event so the
+   * activeFormat mirror updates synchronously with the new caret position.
+   */
+  fun setSelection(index: Int, length: Int = 0) {
+    evalJs("window.setSelection($index, $length)")
+  }
+
   fun undo() = evalJs("window.undo()")
   fun redo() = evalJs("window.redo()")
   fun focus() = evalJs("window.focusEditor()")
