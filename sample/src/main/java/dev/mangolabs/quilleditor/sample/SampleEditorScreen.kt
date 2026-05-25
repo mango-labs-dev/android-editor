@@ -8,16 +8,21 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddPhotoAlternate
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -29,6 +34,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.mangolabs.quilleditor.QuillEditor
@@ -100,12 +106,17 @@ fun SampleEditorScreen(
       .fillMaxSize()
       .imePadding()
   ) {
-    QuillEditor(
-      state = state,
+    Surface(
       modifier = Modifier
         .fillMaxWidth()
         .weight(1f)
-    )
+        .padding(horizontal = 12.dp, vertical = 8.dp),
+      shape = RoundedCornerShape(12.dp),
+      border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+      color = MaterialTheme.colorScheme.surface
+    ) {
+      QuillEditor(state = state, modifier = Modifier.fillMaxSize())
+    }
     HorizontalDivider()
     Row(
       modifier = Modifier.fillMaxWidth(),

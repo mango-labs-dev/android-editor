@@ -1,6 +1,7 @@
 * { -webkit-tap-highlight-color: transparent; }
 
 html, body {
+  height: 100%;
   margin: 0;
   padding: 0;
   background: transparent;
@@ -13,12 +14,20 @@ html, body {
 #editor {
   border: none;
   padding: 16px;
-  min-height: 100vh;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+/* Quill injects .ql-container inside #editor; chain height so any tap inside
+   the WebView lands in the focusable .ql-editor instead of dead space. */
+.ql-container {
+  height: 100%;
 }
 
 .ql-editor {
   padding: 0;
   outline: none;
+  min-height: 100%;
 }
 
 .ql-editor.ql-blank::before {
