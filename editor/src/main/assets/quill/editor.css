@@ -1,7 +1,6 @@
 * { -webkit-tap-highlight-color: transparent; }
 
 html, body {
-  height: 100%;
   margin: 0;
   padding: 0;
   background: transparent;
@@ -11,10 +10,15 @@ html, body {
   color: var(--text-color, #1f1f1f);
 }
 
+/* Use viewport-anchored fixed positioning instead of a height:100% chain.
+   Android WebView in Compose's AndroidView leaves <html>/<body> measured to
+   content (height 0), so percentage heights collapse and the editor becomes
+   invisible. position:fixed; inset:0 fills the WebView viewport directly. */
 #editor {
+  position: fixed;
+  inset: 0;
   border: none;
   padding: 16px;
-  height: 100%;
   box-sizing: border-box;
 }
 
