@@ -18,7 +18,6 @@ html, body {
   position: fixed;
   inset: 0;
   border: none;
-  padding: 16px;
   box-sizing: border-box;
 }
 
@@ -28,8 +27,13 @@ html, body {
   height: 100%;
 }
 
+/* Padding sits on .ql-editor (not on #editor / .ql-container) so the caret,
+   typed text, and the absolutely-positioned placeholder all share the same
+   16px inset. With padding on the container, .ql-editor content was pushed
+   right while ::before (positioned to the container) stayed at left: 0,
+   visibly misaligning the placeholder with the caret. */
 .ql-editor {
-  padding: 0;
+  padding: 16px;
   outline: none;
   min-height: 100%;
 }
@@ -37,7 +41,8 @@ html, body {
 .ql-editor.ql-blank::before {
   color: var(--placeholder-color, #999);
   font-style: normal;
-  left: 0;
+  left: 16px;
+  right: 16px;
 }
 
 /* Constrain inline images to a thumbnail box rather than letting them
