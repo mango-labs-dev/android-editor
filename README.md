@@ -5,7 +5,7 @@ A Jetpack Compose rich text editor backed by Quill.js. The toolbar and surroundi
 - **Library module:** `:editor` — publishes the AAR.
 - **Sample app:** `:sample` — consumes the library via `project(":editor")` so you can iterate without a publish step.
 
-Status: `0.1.0-SNAPSHOT`. Published only to GitHub Packages (and `mavenLocal` for development).
+Status: `0.1.0`. Published to GitHub Packages (and `mavenLocal` for development).
 
 ---
 
@@ -44,7 +44,7 @@ dependencyResolutionManagement {
 
 ```kotlin
 dependencies {
-  implementation("dev.mangolabs:quill-compose-editor:0.1.0-SNAPSHOT")
+  implementation("dev.mangolabs:quill-compose-editor:0.1.0")
 }
 ```
 
